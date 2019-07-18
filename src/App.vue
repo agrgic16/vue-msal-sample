@@ -3,14 +3,17 @@
     <img src="./assets/logo.png">
     <h1>{{ msg }}</h1>
     <button @click="login" type="button" v-if="!user">Login with Microsoft</button>
-    <button @click="callAPI" type="button" v-if="user">
+    <button @click="getMyInfo" type="button" v-if="user">
       Call Graph's /me API
+    </button>
+    <button @click="getCareerPathsInfo" type="button" v-if="user">
+      Get Career Paths Pages
     </button>
     <button @click="logout" type="button" v-if="user">
       Logout
     </button>
     <h3 v-if="user">Hello {{ user.name }}</h3>
-    <pre v-if="userInfo">{{ JSON.stringify(userInfo, null, 4) }}</pre>
+    <pre v-if="responseInfo">{{ JSON.stringify(responseInfo, null, 4) }}</pre>
     <p v-if="loginFailed">Login unsuccessful</p>
     <p v-if="apiCallFailed">Graph API call unsuccessful</p>
   </div>
@@ -26,7 +29,7 @@ export default {
     return {
       msg: 'Welcome to Your Vue.js + MSAL.js App',
       user: null,
-      userInfo: null,
+      responseInfo: null,
       apiCallFailed: false,
       loginFailed: false
     }
@@ -36,13 +39,13 @@ export default {
     this.graphService = new GraphService();
   },
   methods: {
-    callAPI() {
+    getMyInfo() {
       this.apiCallFailed = false;
       this.authService.getToken().then(
         token => {
           this.graphService.getUserInfo(token).then(
             data => {
-              this.userInfo = data;
+              this.responseInfo = data;
             },
             error => {
               console.error(error);
@@ -57,6 +60,26 @@ export default {
       );
     },
 
+    getCareerPathsInfo() {
+      this.apiCallFailed = false;
+      this.authService.getToken().then(
+        token => {
+          this.graphService.getCareerPathsSitePages(token).then(
+            data => {
+              this.responseInfo = data;
+            },
+            error => {
+              console.error(error);
+              this.apiCallFailed = true;
+            }
+          );
+        },
+        error => {
+          console.error(error);
+          this.apiCallFailed = true;
+        }
+      );
+    },
     logout() {
       this.authService.logout();
     },
